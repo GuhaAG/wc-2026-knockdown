@@ -130,6 +130,12 @@ body {
   color: #fff;
 }
 .btn-primary:hover { background: #ff5683; }
+.btn-ghost {
+  flex: 0 0 auto;
+  background: transparent;
+  color: var(--muted);
+}
+.btn-ghost:hover { color: var(--ink); border-color: var(--line); }
 .btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 .status {
   margin: 0.1rem 0 0;
@@ -173,6 +179,7 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: space-around;
+  gap: 0.6rem;
   flex: 1 1 auto;
 }
 
@@ -282,6 +289,17 @@ body {
   color: var(--good);
   font-weight: 700;
 }
+
+/* placeholder for matches whose teams aren't decided yet */
+.team.tbd {
+  background: transparent;
+  border-style: dashed;
+  border-color: rgba(36, 74, 107, 0.6);
+  color: var(--muted);
+  cursor: default;
+}
+.team.tbd:hover { background: transparent; }
+.team.tbd .flag { box-shadow: none; background: transparent; }
 
 /* ---------- Mirrored right half ---------- */
 .round.rgt h2 { text-align: right; }

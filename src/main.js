@@ -1,4 +1,4 @@
-import { predictedWinners } from "./bracket.js";
+import { predictedWinners, emptyPicks } from "./bracket.js";
 import { encodePicks, decodePicks } from "./encode.js";
 import { scoreBracket } from "./score.js";
 import { fetchKnockoutEvents, resolveBracket } from "./api.js";
@@ -9,6 +9,7 @@ const els = {
   name: document.getElementById("name"),
   copy: document.getElementById("copy"),
   refresh: document.getElementById("refresh"),
+  clear: document.getElementById("clear"),
   score: document.getElementById("score"),
   status: document.getElementById("status"),
 };
@@ -17,7 +18,7 @@ const FALLBACK_SEED = Array.from({ length: 32 }, (_, i) => `Team ${i + 1}`);
 
 const app = {
   seed: FALLBACK_SEED.slice(),
-  picks: new Array(32).fill(0),
+  picks: emptyPicks(),
   name: "",
   actualWinners: new Array(32).fill(null),
 };
@@ -75,6 +76,13 @@ els.copy.addEventListener("click", async () => {
 });
 
 els.refresh.addEventListener("click", loadResults);
+
+els.clear.addEventListener("click", () => {
+  app.picks = emptyPicks();
+  syncHashFromState();
+  recompute();
+  setStatus("Picks cleared.");
+});
 
 async function loadResults() {
   setStatus("Fetching results…");

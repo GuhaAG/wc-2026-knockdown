@@ -32,21 +32,28 @@ function flagEl(team) {
   return wrap;
 }
 
-function teamButton(slot, side, team, picks, perPick, decided) {
+function teamButton(slot, side, team, picks, perPick, actualWinner) {
   const btn = document.createElement("button");
   btn.className = "team";
   btn.dataset.slot = String(slot);
   btn.dataset.side = String(side);
   btn.type = "button";
 
-  const isPicked = picks[slot] === side;
-  if (isPicked) btn.classList.add("picked");
-  const pp = perPick && perPick[slot];
-  if (pp && pp.correct !== null && isPicked) {
-    btn.classList.add(pp.correct ? "correct" : "wrong");
+  const known = !!team;
+  if (!known) {
+    btn.classList.add("tbd");
+    btn.disabled = true; // can't pick a team that isn't decided yet
   }
-  // dim the side a finished match eliminated, even if it wasn't the pick
-  if (decided && pp && pp.correct === false && !isPicked) btn.classList.add("advanced");
+  const isPicked = known && picks[slot] === side;
+  if (isPicked) btn.classList.add("picked");
+
+  const pp = perPick && perPick[slot];
+  const decided = !!(pp && pp.correct !== null);
+  if (isPicked && decided) btn.classList.add(pp.correct ? "correct" : "wrong");
+  // mark the team that really advanced (when you didn't pick it)
+  if (known && decided && !isPicked && actualWinner && team === actualWinner) {
+    btn.classList.add("advanced");
+  }
 
   btn.appendChild(flagEl(team));
   const name = document.createElement("span");
@@ -57,7 +64,7 @@ function teamButton(slot, side, team, picks, perPick, decided) {
 }
 
 function matchEl(slot, state, opts = {}) {
-  const { seed, picks, perPick } = state;
+  const { seed, picks, perPick, actualWinners } = state;
   const wrap = document.createElement("div");
   wrap.className = "match";
   if (opts.className) wrap.className += " " + opts.className;
@@ -67,10 +74,9 @@ function matchEl(slot, state, opts = {}) {
     ? [loserOf(28, seed, picks), loserOf(29, seed, picks)]
     : slotTeams(slot, seed, picks);
 
-  const pp = perPick && perPick[slot];
-  const decided = !!(pp && pp.correct !== null);
+  const aw = actualWinners ? actualWinners[slot] : null;
   teams.forEach((team, side) => {
-    wrap.appendChild(teamButton(slot, side, team, picks, perPick, decided));
+    wrap.appendChild(teamButton(slot, side, team, picks, perPick, aw));
   });
   return wrap;
 }

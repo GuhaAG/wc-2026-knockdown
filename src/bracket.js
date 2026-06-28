@@ -4,6 +4,11 @@ export const ROUND_NAMES = ["R32", "R16", "QF", "SF", "Final"];
 export const FINAL_SLOT = 30;
 export const THIRD_PLACE_SLOT = 31;
 export const SLOT_COUNT = 32;
+export const UNPICKED = -1;
+
+export function emptyPicks() {
+  return new Array(SLOT_COUNT).fill(UNPICKED);
+}
 
 function roundIndexOfSlot(slot) {
   for (let r = ROUND_STARTS.length - 1; r >= 0; r--) {
@@ -31,14 +36,20 @@ function sides(slot, seed, picks) {
   return [winnerOf(f.a, seed, picks), winnerOf(f.b, seed, picks)];
 }
 
+// Returns the chosen winner, or null when this match is unpicked (or its
+// teams aren't known yet because a feeding match is unpicked).
 export function winnerOf(slot, seed, picks) {
   const [a, b] = sides(slot, seed, picks);
-  return picks[slot] === 1 ? b : a;
+  if (picks[slot] === 0) return a;
+  if (picks[slot] === 1) return b;
+  return null;
 }
 
 export function loserOf(slot, seed, picks) {
   const [a, b] = sides(slot, seed, picks);
-  return picks[slot] === 1 ? a : b;
+  if (picks[slot] === 0) return b;
+  if (picks[slot] === 1) return a;
+  return null;
 }
 
 export function predictedWinners(seed, picks) {
@@ -46,6 +57,8 @@ export function predictedWinners(seed, picks) {
   for (let s = 0; s <= FINAL_SLOT; s++) out[s] = winnerOf(s, seed, picks);
   const l1 = loserOf(28, seed, picks);
   const l2 = loserOf(29, seed, picks);
-  out[THIRD_PLACE_SLOT] = picks[THIRD_PLACE_SLOT] === 1 ? l2 : l1;
+  if (picks[THIRD_PLACE_SLOT] === 0) out[THIRD_PLACE_SLOT] = l1;
+  else if (picks[THIRD_PLACE_SLOT] === 1) out[THIRD_PLACE_SLOT] = l2;
+  else out[THIRD_PLACE_SLOT] = null;
   return out;
 }
