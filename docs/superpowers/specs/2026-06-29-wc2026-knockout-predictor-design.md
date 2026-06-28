@@ -28,6 +28,7 @@ free, keyless public API.
 - No accounts, auth, or server-side storage.
 - No central leaderboard service (comparison happens by opening friends' URLs).
 - No exact-score prediction — picks are "which team advances" only.
+- No manual results maintenance — scoring is fully driven by the live API.
 
 ## Architecture
 
@@ -115,12 +116,14 @@ Round-weighted points for each **correct advancing pick**:
 Probing TheSportsDB (league 4429, season 2026) on 2026-06-29 confirmed WC2026 data exists and
 knockout fixtures are appearing (e.g. an upcoming R32 fixture *South Africa vs Canada*,
 `intRound` `"32"`), but the **free key returns sparse/lagged results** — the full-season
-endpoint returned only a handful of events. Mitigation (recommended, user may veto in review):
+endpoint returned only a handful of events. **Decision: pure-API, no manual override** (the
+owner will not hand-maintain results). To get the most out of the free tier, `api.js` will:
 
-- A tiny **manual results override**: an optional committed `results.json` (or a hidden
-  admin-only hash param) the owner can edit to correct/supplement any match the API misses or
-  reports late. Kept minimal — the API remains the primary source; this is only a safety valve
-  so scoring is never blocked by free-tier gaps.
+- Combine multiple free endpoints for coverage — `eventsseason.php` plus `eventsnextleague.php`
+  / `eventspastleague.php` / per-round `eventsround.php` — and merge/de-dupe by `idEvent`.
+- Try the alternate free keys (`3` / `123`) and cache the last good fetch in `localStorage`.
+- Degrade gracefully: any match without a final score stays **pending** (never falsely wrong),
+  so missing/lagged data simply defers scoring rather than breaking the app.
 
 ## Round Mapping (to verify at implementation time)
 
@@ -145,8 +148,3 @@ codes for QF/SF/Final/3rd-place must be confirmed against live data as those fix
 - **End-to-end manual:** fill a bracket → copy link → open in a fresh tab/incognito →
   identical bracket renders; simulate results → scores match expectation; verify on the live
   GitHub Pages URL.
-
-## Open Decision for User
-
-- Keep the **manual results override** safety valve (recommended given the free-tier risk), or
-  drop it for a pure-API build as originally chosen?
