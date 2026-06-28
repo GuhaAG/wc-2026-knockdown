@@ -1,6 +1,4 @@
-import {
-  ROUND_STARTS, ROUND_SIZES, ROUND_NAMES, feederSlots, winnerOf, loserOf, FINAL_SLOT,
-} from "./bracket.js";
+import { feederSlots, winnerOf, loserOf, FINAL_SLOT } from "./bracket.js";
 import { flagUrl, initials } from "./flags.js";
 
 const ROUND_LABELS = {
@@ -99,52 +97,69 @@ function championCard(state) {
   return card;
 }
 
+// Two-sided wallchart split. Left half = everything feeding SF slot 28;
+// right half = everything feeding SF slot 29 (built outer->inner so it mirrors).
+const LEFT_HALF = [
+  ["R32", [0, 1, 2, 3, 4, 5, 6, 7]],
+  ["R16", [16, 17, 18, 19]],
+  ["QF", [24, 25]],
+  ["SF", [28]],
+];
+const RIGHT_HALF = [
+  ["SF", [29]],
+  ["QF", [26, 27]],
+  ["R16", [20, 21, 22, 23]],
+  ["R32", [8, 9, 10, 11, 12, 13, 14, 15]],
+];
+
+function roundColumn(roundKey, slots, state, sideClass) {
+  const col = document.createElement("section");
+  col.className = `round ${sideClass}`;
+  col.dataset.r = roundKey;
+  const h = document.createElement("h2");
+  h.textContent = ROUND_LABELS[roundKey];
+  col.appendChild(h);
+  const matches = document.createElement("div");
+  matches.className = "matches";
+  for (const slot of slots) matches.appendChild(matchEl(slot, state));
+  col.appendChild(matches);
+  return col;
+}
+
 // state: { seed, picks, actualWinners, perPick }
 export function renderBracket(container, state) {
   container.innerHTML = "";
   const rounds = document.createElement("div");
   rounds.className = "rounds";
 
-  // main rounds R32..SF (Final handled in the finale column)
-  for (let r = 0; r < ROUND_NAMES.length - 1; r++) {
-    const col = document.createElement("section");
-    col.className = "round";
-    col.dataset.r = ROUND_NAMES[r];
-    const h = document.createElement("h2");
-    h.textContent = ROUND_LABELS[ROUND_NAMES[r]];
-    col.appendChild(h);
-    const matches = document.createElement("div");
-    matches.className = "matches";
-    for (let local = 0; local < ROUND_SIZES[r]; local++) {
-      matches.appendChild(matchEl(ROUND_STARTS[r] + local, state));
-    }
-    col.appendChild(matches);
-    rounds.appendChild(col);
+  for (const [key, slots] of LEFT_HALF) {
+    rounds.appendChild(roundColumn(key, slots, state, "lft"));
   }
 
-  // finale column: Final + champion + 3rd place
-  const finale = document.createElement("section");
-  finale.className = "round finale";
-
+  // center column: Final + champion + 3rd place
+  const center = document.createElement("section");
+  center.className = "round center";
   const fh = document.createElement("h2");
   fh.textContent = "Final";
-  finale.appendChild(fh);
+  center.appendChild(fh);
   const fm = document.createElement("div");
   fm.className = "matches";
   fm.appendChild(matchEl(FINAL_SLOT, state, { className: "final-match" }));
-  finale.appendChild(fm);
-
-  finale.appendChild(championCard(state));
-
+  center.appendChild(fm);
+  center.appendChild(championCard(state));
   const th = document.createElement("h2");
   th.className = "third-head";
   th.textContent = "Third place";
-  finale.appendChild(th);
+  center.appendChild(th);
   const tm = document.createElement("div");
   tm.className = "matches";
   tm.appendChild(matchEl(31, state, { thirdPlace: true, className: "third-match" }));
-  finale.appendChild(tm);
+  center.appendChild(tm);
+  rounds.appendChild(center);
 
-  rounds.appendChild(finale);
+  for (const [key, slots] of RIGHT_HALF) {
+    rounds.appendChild(roundColumn(key, slots, state, "rgt"));
+  }
+
   container.appendChild(rounds);
 }

@@ -187,8 +187,12 @@ body {
   padding: 3px;
 }
 /* short connector ports — read as bracket joins without fragile elbows */
-.round:not([data-r="R32"]) .match::before,
-.round:not(.finale) .match::after {
+.round.lft .match::after,
+.round.rgt .match::before,
+.round.lft:not([data-r="R32"]) .match::before,
+.round.rgt:not([data-r="R32"]) .match::after,
+.center .final-match::before,
+.center .final-match::after {
   content: "";
   position: absolute;
   top: 50%;
@@ -196,8 +200,15 @@ body {
   height: 2px;
   background: rgba(36, 74, 107, 0.6);
 }
-.round:not([data-r="R32"]) .match::before { left: calc(var(--gap-col) / -2); }
-.round:not(.finale) .match::after { right: calc(var(--gap-col) / -2); }
+/* left half flows inward: winner exits right, feeders enter from the left */
+.round.lft .match::after { right: calc(var(--gap-col) / -2); }
+.round.lft:not([data-r="R32"]) .match::before { left: calc(var(--gap-col) / -2); }
+/* right half is mirrored: winner exits left, feeders enter from the right */
+.round.rgt .match::before { left: calc(var(--gap-col) / -2); }
+.round.rgt:not([data-r="R32"]) .match::after { right: calc(var(--gap-col) / -2); }
+/* center final receives a port from each semi-final */
+.center .final-match::before { left: calc(var(--gap-col) / -2); }
+.center .final-match::after { right: calc(var(--gap-col) / -2); }
 
 .team {
   display: flex;
@@ -272,9 +283,19 @@ body {
   font-weight: 700;
 }
 
-/* ---------- Finale column ---------- */
-.finale { min-width: 240px; justify-content: flex-start; }
-.finale .matches { flex: 0 0 auto; }
+/* ---------- Mirrored right half ---------- */
+.round.rgt h2 { text-align: right; }
+.round.rgt .team { flex-direction: row-reverse; border-left-width: 1px; border-right: 3px solid transparent; }
+.round.rgt .name { text-align: right; }
+.round.rgt .team.picked { border-right-color: var(--rose); }
+.round.rgt .team.correct { border-right-color: var(--good); }
+.round.rgt .team.wrong { border-right-color: var(--bad); }
+.round.rgt .team.advanced { border-right-color: var(--good); }
+
+/* ---------- Center column (final / champion / third) ---------- */
+.center { min-width: 230px; justify-content: center; }
+.center .matches { flex: 0 0 auto; }
+.center h2 { text-align: center; }
 .final-match .team { padding: 0.7rem 0.8rem; font-size: 1rem; }
 .final-match .flag { width: 34px; height: 24px; }
 .third-head {
