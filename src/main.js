@@ -31,8 +31,15 @@ function syncHashFromState() {
 
 function recompute() {
   const predicted = predictedWinners(app.seed, app.picks);
-  const { total, perPick } = scoreBracket(predicted, app.actualWinners);
-  els.score.textContent = `Score: ${total}`;
+  const { total, perPick, perRound } = scoreBracket(predicted, app.actualWinners);
+  els.score.textContent = String(total);
+  const decided = Object.values(perRound).reduce((n, r) => n + r.of, 0);
+  els.score.title = decided
+    ? Object.entries(perRound)
+        .filter(([, r]) => r.of)
+        .map(([round, r]) => `${round} ${r.got}/${r.of}`)
+        .join(" · ")
+    : "No results in yet";
   renderBracket(els.bracket, {
     seed: app.seed, picks: app.picks,
     actualWinners: app.actualWinners, perPick,

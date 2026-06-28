@@ -3,19 +3,32 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>WC 2026 Knockout Predictor</title>
+  <title>WC 2026 Knockout Wallchart</title>
+  <meta name="description" content="Pick every winner of the 2026 World Cup knockouts and share your bracket with a link. No sign-up." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Saira:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header>
-    <h1>WC 2026 Knockout Predictor</h1>
-    <div class="controls">
-      <input id="name" type="text" placeholder="Your name" maxlength="24" />
-      <button id="copy">Copy share link</button>
-      <button id="refresh">Refresh results</button>
-      <span id="score" class="score"></span>
+  <header class="hero">
+    <div class="hero-titles">
+      <span class="eyebrow">FIFA World Cup 2026 · Knockouts</span>
+      <h1>Knockout<br />Wallchart</h1>
+      <p class="tagline">Pick every winner from the Round of 32 to the final. Share your bracket with a link — no sign-up, no accounts.</p>
     </div>
-    <p id="status" class="status"></p>
+    <div class="panel">
+      <div class="scoreboard">
+        <span class="sb-label">Your score</span>
+        <span id="score" class="sb-value">0</span>
+      </div>
+      <input id="name" class="name-input" type="text" placeholder="Name your wallchart" maxlength="24" />
+      <div class="actions">
+        <button id="copy" class="btn btn-primary" type="button">Copy share link</button>
+        <button id="refresh" class="btn" type="button">Refresh results</button>
+      </div>
+      <p id="status" class="status" role="status"></p>
+    </div>
   </header>
   <main id="bracket"></main>
   <script type="module" src="src/main.js"></script>

@@ -5,10 +5,12 @@ export const SEASON = "2026";
 const KEYS = ["3", "123"];
 const base = (key) => `https://www.thesportsdb.com/api/v1/json/${key}`;
 
-// main-tree round codes in slot-round order: R32,R16,QF,SF,Final
-const MAIN_ROUND_CODES = ["32", "16", "8", "4", "2"];
-// 3rd-place code is unconfirmed on the free tier; allowlist is a one-line tweak.
-export const THIRD_PLACE_ROUND_CODES = ["150", "3", "third"];
+// TheSportsDB knockout round codes (verified against the completed 2022 WC):
+// R32=32, R16=16, QF=125, SF=150, Final=200, 3rd-place=160.
+// Group matchdays use 1/2/3, so they never collide with these.
+const MAIN_ROUND_CODES = ["32", "16", "125", "150", "200"]; // slot-round order
+const SF_CODE = MAIN_ROUND_CODES[3]; // "150"
+export const THIRD_PLACE_ROUND_CODES = ["160"];
 
 function num(v) {
   return v === null || v === undefined || v === "" ? null : Number(v);
@@ -77,8 +79,8 @@ export function resolveBracket(events) {
   }
 
   // 3rd place: the two SF losers (slots 28,29), matched to a non-main-tree event
-  const sf1 = events.find((e) => e.round === "4" && actual[28] != null && teamSet(e).has(actual[28]));
-  const sf2 = events.find((e) => e.round === "4" && actual[29] != null && teamSet(e).has(actual[29]));
+  const sf1 = events.find((e) => e.round === SF_CODE && actual[28] != null && teamSet(e).has(actual[28]));
+  const sf2 = events.find((e) => e.round === SF_CODE && actual[29] != null && teamSet(e).has(actual[29]));
   const l1 = sf1 ? loserOfEvent(sf1) : null;
   const l2 = sf2 ? loserOfEvent(sf2) : null;
   if (l1 != null && l2 != null) {
@@ -92,28 +94,33 @@ export function resolveBracket(events) {
 }
 
 export async function fetchKnockoutEvents(fetchImpl = fetch) {
-  const urls = (key) => [
-    `${base(key)}/eventsseason.php?id=${LEAGUE_ID}&s=${SEASON}`,
-    `${base(key)}/eventspastleague.php?id=${LEAGUE_ID}`,
-    `${base(key)}/eventsnextleague.php?id=${LEAGUE_ID}`,
-  ];
-  const byId = new Map();
+  // The free `eventsseason` endpoint returns only a partial set, and key "3"
+  // returns fewer rows than "123". So we query each knockout round explicitly
+  // via `eventsround` and merge the UNION across all keys (no early break) so
+  // we always get the full 16 R32 fixtures once they exist.
+  const roundCodes = [...MAIN_ROUND_CODES, ...THIRD_PLACE_ROUND_CODES];
+  const urls = [];
   for (const key of KEYS) {
-    for (const url of urls(key)) {
+    for (const r of roundCodes) {
+      urls.push(`${base(key)}/eventsround.php?id=${LEAGUE_ID}&r=${r}&s=${SEASON}`);
+    }
+  }
+  const byId = new Map();
+  await Promise.all(
+    urls.map(async (url) => {
       try {
         const res = await fetchImpl(url);
         const data = await res.json();
         for (const e of data.events || []) {
           if (e.idLeague !== LEAGUE_ID && e.strLeague !== "FIFA World Cup") continue;
-          byId.set(String(e.idEvent), e);
+          byId.set(String(e.idEvent), e); // later (key "123") rows overwrite/dedupe by id
         }
       } catch {
         /* skip this endpoint */
       }
-    }
-    if (byId.size) break; // first key that returns anything wins
-  }
+    })
+  );
   const all = [...byId.values()].map(normalizeEvent);
-  const known = new Set([...MAIN_ROUND_CODES, ...THIRD_PLACE_ROUND_CODES]);
+  const known = new Set(roundCodes);
   return all.filter((e) => known.has(e.round));
 }
