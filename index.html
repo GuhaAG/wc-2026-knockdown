@@ -11,26 +11,23 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header class="hero">
-    <div class="hero-titles">
-      <span class="eyebrow">FIFA World Cup 2026 · Knockouts</span>
-      <h1>Knockout<br />Wallchart</h1>
-      <p class="tagline">Pick every winner from the Round of 32 to the final. Share your bracket with a link — no sign-up, no accounts.</p>
+  <header class="bar">
+    <div class="brand">
+      <span class="eyebrow">FIFA World Cup 2026</span>
+      <span class="wordmark">Knockouts</span>
     </div>
-    <div class="panel">
-      <div class="scoreboard">
-        <span class="sb-label">Your score</span>
-        <span id="score" class="sb-value">0</span>
-      </div>
-      <input id="name" class="name-input" type="text" placeholder="Name your wallchart" maxlength="24" />
-      <div class="actions">
-        <button id="copy" class="btn btn-primary" type="button">Copy share link</button>
-        <button id="refresh" class="btn" type="button">Refresh results</button>
-        <button id="clear" class="btn btn-ghost" type="button">Clear picks</button>
-      </div>
-      <p id="status" class="status" role="status"></p>
+    <div class="score-pill" title="Your total score so far">
+      <span class="sp-label">Score</span>
+      <span id="score" class="sp-value">0</span>
+    </div>
+    <div class="tools">
+      <input id="name" class="name-input" type="text" placeholder="Name your bracket" maxlength="24" />
+      <button id="copy" class="btn btn-primary" type="button">Copy link</button>
+      <button id="refresh" class="btn" type="button" title="Pull the latest match results">Refresh</button>
+      <button id="clear" class="btn btn-ghost" type="button" title="Reset every pick">Clear</button>
     </div>
   </header>
+  <p id="status" class="status" role="status"></p>
   <main id="bracket"></main>
   <script type="module" src="src/main.js"></script>
 </body>

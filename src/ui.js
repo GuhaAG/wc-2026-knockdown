@@ -55,6 +55,8 @@ function teamButton(slot, side, team, picks, perPick, actualWinner) {
     btn.classList.add("advanced");
   }
 
+  if (team) btn.title = team; // full name on hover when the label is ellipsized
+
   btn.appendChild(flagEl(team));
   const name = document.createElement("span");
   name.className = "name";
