@@ -1,0 +1,7 @@
+{
+  "events": [
+    { "idEvent": "1", "idLeague": "4429", "strLeague": "FIFA World Cup", "intRound": "32", "strHomeTeam": "Brazil",     "strAwayTeam": "Ghana",   "intHomeScore": "2", "intAwayScore": "0", "dateEvent": "2026-06-28", "strTimestamp": "2026-06-28T19:00:00" },
+    { "idEvent": "2", "idLeague": "4429", "strLeague": "FIFA World Cup", "intRound": "32", "strHomeTeam": "France",     "strAwayTeam": "Japan",   "intHomeScore": "1", "intAwayScore": "1", "dateEvent": "2026-06-28", "strTimestamp": "2026-06-28T22:00:00" },
+    { "idEvent": "3", "idLeague": "4429", "strLeague": "FIFA World Cup", "intRound": "16", "strHomeTeam": "Brazil",     "strAwayTeam": "France",  "intHomeScore": "0", "intAwayScore": "3", "dateEvent": "2026-07-02", "strTimestamp": "2026-07-02T19:00:00" }
+  ]
+}
