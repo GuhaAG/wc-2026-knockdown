@@ -1,0 +1,10 @@
+:root { font-family: system-ui, sans-serif; }
+body { margin: 0; padding: 1rem; background: #0b1020; color: #e8ecf5; }
+.controls { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
+.score { font-weight: 700; }
+.status { color: #9aa6c4; min-height: 1.2em; }
+.match { border: 1px solid #2a335a; border-radius: 6px; padding: .25rem; margin: .25rem 0; }
+.team { display: block; padding: .25rem .5rem; cursor: pointer; border-radius: 4px; }
+.team.picked { background: #27407a; }
+.team.correct { outline: 2px solid #36d399; }
+.team.wrong { outline: 2px solid #f87272; opacity: .7; }
