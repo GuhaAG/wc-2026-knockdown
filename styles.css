@@ -8,3 +8,8 @@ body { margin: 0; padding: 1rem; background: #0b1020; color: #e8ecf5; }
 .team.picked { background: #27407a; }
 .team.correct { outline: 2px solid #36d399; }
 .team.wrong { outline: 2px solid #f87272; opacity: .7; }
+
+main#bracket { display: flex; gap: 1rem; overflow-x: auto; align-items: flex-start; padding-top: 1rem; }
+.round { min-width: 160px; }
+.round h2 { font-size: .9rem; color: #9aa6c4; margin: 0 0 .5rem; }
+.round.third { border-left: 2px dashed #2a335a; padding-left: 1rem; }
