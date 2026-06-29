@@ -1,7 +1,11 @@
 import { SLOT_COUNT, UNPICKED, emptyPicks } from "./bracket.js";
 
 export const PICK_COUNT = SLOT_COUNT; // 32
-const NUM_BYTES = Math.ceil((PICK_COUNT * 2) / 8); // 2 bits/pick -> 8 bytes
+// byte 0 is a format-version sentinel so links from an older encoding (or a
+// different bracket-slot order) are detected and reset, never silently misread.
+const VERSION = 0xb1;
+const DATA_BYTES = Math.ceil((PICK_COUNT * 2) / 8); // 2 bits/pick -> 8 bytes
+const NUM_BYTES = 1 + DATA_BYTES; // 9
 
 // Pick value <-> 2-bit code. 0b00 = unpicked, 0b01 = side A, 0b10 = side B.
 function toCode(v) { return v === 0 ? 1 : v === 1 ? 2 : 0; }
@@ -24,9 +28,10 @@ function fromBase64Url(str) {
 
 export function encodePicks(picks, name = "") {
   const bytes = new Uint8Array(NUM_BYTES);
+  bytes[0] = VERSION;
   for (let i = 0; i < PICK_COUNT; i++) {
     const bit = i * 2;
-    bytes[bit >> 3] |= (toCode(picks[i]) & 0b11) << (bit & 7);
+    bytes[1 + (bit >> 3)] |= (toCode(picks[i]) & 0b11) << (bit & 7);
   }
   const params = new URLSearchParams();
   params.set("p", toBase64Url(bytes));
@@ -34,22 +39,29 @@ export function encodePicks(picks, name = "") {
   return params.toString();
 }
 
+// Returns { picks, name, stale }. `stale` is true when a `p` value was present
+// but unreadable (old format / wrong version), so the caller can reset + inform.
 export function decodePicks(hash) {
   const h = (hash || "").replace(/^#/, "");
   const params = new URLSearchParams(h);
   const name = params.get("n") || "";
   const picks = emptyPicks();
   const p = params.get("p");
+  let stale = false;
   if (p) {
     try {
       const bytes = fromBase64Url(p);
-      for (let i = 0; i < PICK_COUNT; i++) {
-        const bit = i * 2;
-        picks[i] = fromCode((bytes[bit >> 3] >> (bit & 7)) & 0b11);
+      if (bytes[0] !== VERSION) {
+        stale = true;
+      } else {
+        for (let i = 0; i < PICK_COUNT; i++) {
+          const bit = i * 2;
+          picks[i] = fromCode((bytes[1 + (bit >> 3)] >> (bit & 7)) & 0b11);
+        }
       }
     } catch {
-      // leave picks all-unpicked on malformed input
+      stale = true; // malformed base64
     }
   }
-  return { picks, name };
+  return { picks, name, stale };
 }

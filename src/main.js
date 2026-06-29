@@ -92,8 +92,8 @@ async function loadResults() {
     // Only adopt the API seed if it looks populated (>= first match present).
     if (seed[0]) app.seed = seed.map((t, i) => t || FALLBACK_SEED[i]);
     app.actualWinners = actualWinners;
-    localStorage.setItem("wc2026:seed", JSON.stringify(app.seed));
-    localStorage.setItem("wc2026:actual", JSON.stringify(actualWinners));
+    localStorage.setItem("wc2026:seed:v2", JSON.stringify(app.seed));
+    localStorage.setItem("wc2026:actual:v2", JSON.stringify(actualWinners));
     setStatus(`Results updated. ${events.length} knockout matches known.`);
   } catch {
     setStatus("Could not fetch results — bracket still works; scores pending.");
@@ -101,20 +101,28 @@ async function loadResults() {
   recompute();
 }
 
-function boot() {
-  const { picks, name } = decodePicks(location.hash);
+async function boot() {
+  const { picks, name, stale } = decodePicks(location.hash);
   app.picks = picks;
   app.name = name;
   els.name.value = name;
+  if (stale) {
+    // an old/incompatible link — drop the bad hash so a refresh stays clean
+    history.replaceState(null, "", location.pathname + location.search);
+  }
   // Warm-start from cached seed/results so the page renders instantly offline.
+  // Keys are versioned so an old (date-order) cache is never reused.
   try {
-    const cs = JSON.parse(localStorage.getItem("wc2026:seed") || "null");
-    const ca = JSON.parse(localStorage.getItem("wc2026:actual") || "null");
+    const cs = JSON.parse(localStorage.getItem("wc2026:seed:v2") || "null");
+    const ca = JSON.parse(localStorage.getItem("wc2026:actual:v2") || "null");
     if (Array.isArray(cs) && cs.length === 32) app.seed = cs;
     if (Array.isArray(ca) && ca.length === 32) app.actualWinners = ca;
   } catch { /* ignore cache errors */ }
   recompute();
-  loadResults(); // refresh in background
+  await loadResults(); // refresh, then surface any reset notice last
+  if (stale) {
+    setStatus("That share link was made with an older version of the bracket, so it was reset. Make your picks and share a fresh link.");
+  }
 }
 
 boot();

@@ -34,3 +34,16 @@ test("all-side-B round-trips", () => {
   const picks = new Array(PICK_COUNT).fill(1);
   assert.deepEqual(decodePicks(encodePicks(picks)).picks, picks);
 });
+
+test("fresh links are not stale", () => {
+  const dec = decodePicks("#" + encodePicks([0, 1, -1], "Ana"));
+  assert.equal(dec.stale, false);
+});
+
+test("a link from an older format is flagged stale and reset", () => {
+  // 'AAAA' decodes to zero bytes -> version byte 0, not the current sentinel
+  const dec = decodePicks("#p=AAAA&n=Kim");
+  assert.equal(dec.stale, true);
+  assert.ok(dec.picks.every((x) => x === UNPICKED));
+  assert.equal(dec.name, "Kim");
+});
