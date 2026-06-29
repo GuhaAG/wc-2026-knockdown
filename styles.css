@@ -45,7 +45,19 @@ body {
   background: linear-gradient(180deg, rgba(8, 23, 38, 0.97), rgba(8, 23, 38, 0.85));
   backdrop-filter: blur(8px);
 }
-.brand { display: flex; flex-direction: column; line-height: 1; min-width: 0; }
+.brand {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+  min-width: 0;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: opacity 0.12s ease;
+}
+.brand:hover { opacity: 0.85; }
+.brand:focus-visible { outline: 2px solid var(--gold); outline-offset: 4px; }
 .eyebrow {
   font-family: var(--body);
   font-weight: 600;

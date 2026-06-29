@@ -12,19 +12,19 @@
 </head>
 <body>
   <header class="bar">
-    <div class="brand">
+    <a class="brand" href="./" title="Start a fresh bracket" aria-label="Knockouts — start a fresh bracket">
       <span class="eyebrow">FIFA World Cup 2026</span>
       <span class="wordmark">Knockouts</span>
-    </div>
+    </a>
     <div class="score-pill" title="Your total score so far">
       <span class="sp-label">Score</span>
       <span id="score" class="sp-value">0</span>
     </div>
     <div class="tools">
       <input id="name" class="name-input" type="text" placeholder="Name your bracket" maxlength="24" />
-      <button id="copy" class="btn btn-primary" type="button">Copy link</button>
-      <button id="refresh" class="btn" type="button" title="Pull the latest match results">Refresh</button>
-      <button id="clear" class="btn btn-ghost" type="button" title="Reset every pick">Clear</button>
+      <button id="copy" class="btn btn-primary" type="button" title="Copy a shareable link to your bracket">Copy link</button>
+      <button id="refresh" class="btn" type="button" title="Fetch the latest match results and re-score your bracket">Refresh results</button>
+      <button id="clear" class="btn btn-ghost" type="button" title="Reset all of your picks">Clear picks</button>
     </div>
   </header>
   <p id="status" class="status" role="status"></p>
