@@ -12,6 +12,33 @@ const MAIN_ROUND_CODES = ["32", "16", "125", "150", "200"]; // slot-round order
 const SF_CODE = MAIN_ROUND_CODES[3]; // "150"
 export const THIRD_PLACE_ROUND_CODES = ["160"];
 
+// Official 2026 FIFA knockout bracket: the 16 Round-of-32 matchups in the order
+// they fill bracket slots 0..15, so that feederSlots() reproduces the real
+// Round-of-16/QF/SF tree (source: en.wikipedia.org/wiki/2026_FIFA_World_Cup_knockout_stage).
+// e.g. slots 2 & 3 both feed R16 slot 17, so the South Africa/Canada winner meets
+// the Netherlands/Morocco winner — as in the real draw.
+const BRACKET_ORDER = [
+  ["Germany", "Paraguay"],          // 0 ┐ R16 16 (M89)
+  ["France", "Sweden"],             // 1 ┘
+  ["South Africa", "Canada"],       // 2 ┐ R16 17 (M90)
+  ["Netherlands", "Morocco"],       // 3 ┘
+  ["Portugal", "Croatia"],          // 4 ┐ R16 18 (M93)
+  ["Spain", "Austria"],             // 5 ┘
+  ["USA", "Bosnia-Herzegovina"],    // 6 ┐ R16 19 (M94)
+  ["Belgium", "Senegal"],           // 7 ┘
+  ["Brazil", "Japan"],              // 8 ┐ R16 20 (M91)
+  ["Ivory Coast", "Norway"],        // 9 ┘
+  ["Mexico", "Ecuador"],            // 10 ┐ R16 21 (M92)
+  ["England", "DR Congo"],          // 11 ┘
+  ["Argentina", "Cape Verde"],      // 12 ┐ R16 22 (M95)
+  ["Australia", "Egypt"],           // 13 ┘
+  ["Switzerland", "Algeria"],       // 14 ┐ R16 23 (M96)
+  ["Colombia", "Ghana"],            // 15 ┘
+];
+
+function norm(s) { return (s || "").toLowerCase().replace(/[^a-z]/g, ""); }
+function pairKey(a, b) { return [norm(a), norm(b)].sort().join("|"); }
+
 function num(v) {
   return v === null || v === undefined || v === "" ? null : Number(v);
 }
@@ -49,18 +76,37 @@ export function resolveBracket(events) {
   const seed = new Array(32).fill(null);
   const actual = new Array(32).fill(null);
 
-  const r32 = events
-    .filter((e) => e.round === "32")
+  const r32 = events.filter((e) => e.round === "32");
+
+  // Place each fixture into its official bracket slot by matching the team pair.
+  const byPair = new Map();
+  for (const e of r32) byPair.set(pairKey(e.home, e.away), e);
+  const used = new Set();
+  BRACKET_ORDER.forEach((pair, slot) => {
+    const e = byPair.get(pairKey(pair[0], pair[1]));
+    if (e) {
+      seed[2 * slot] = e.home;
+      seed[2 * slot + 1] = e.away;
+      actual[slot] = e.winner; // may be null (pending/draw-by-score)
+      used.add(e.id);
+    }
+  });
+
+  // Graceful fallback for any fixture not in the official list (e.g. a different
+  // dataset): fill the remaining empty slots in chronological order.
+  const leftovers = r32
+    .filter((e) => !used.has(e.id))
     .sort((a, b) =>
       (a.timestamp || a.date || "").localeCompare(b.timestamp || b.date || "") ||
-      a.id.localeCompare(b.id))
-    .slice(0, 16);
-
-  r32.forEach((e, i) => {
-    seed[2 * i] = e.home;
-    seed[2 * i + 1] = e.away;
-    actual[i] = e.winner; // may be null (pending/draw-by-score)
-  });
+      a.id.localeCompare(b.id));
+  let li = 0;
+  for (let slot = 0; slot < 16 && li < leftovers.length; slot++) {
+    if (seed[2 * slot] != null) continue;
+    const e = leftovers[li++];
+    seed[2 * slot] = e.home;
+    seed[2 * slot + 1] = e.away;
+    actual[slot] = e.winner;
+  }
 
   // higher main-tree rounds: R16..Final
   for (let ri = 1; ri < MAIN_ROUND_CODES.length; ri++) {
